@@ -69,19 +69,20 @@
  * level 0 (1 points):  letters and numbers exist
  * level 1 (1 points):  mixed case letters
  * level 1 (2 points):  letters, numbers and special characters 
- * 					    exist
+ *                      exist
  * level 1 (2 points):  mixed case letters, numbers and special 
- * 					    characters exist
+ *                      characters exist
  * 
  * 
  */
 
 (function(window, undefined) {
-	window.passwordCheck = function(string, callback) {
+	window.passwordCheck = function(string, options) {
 		var intScore   = 0,
-		    strVerdict = "weak",
-		    len        = string.length,
-		    regexes    = [
+				strVerdict = "weak",
+				numVerdict = 0,
+				len        = string.length,
+				regexes    = [
 
 				/[a-z]/,                                                                        // lowercase letters
 				/[A-Z]/,                                                                        // uppercase letters
@@ -114,15 +115,28 @@
 		if (string.search(regexes[7]) !== -1) intScore = (intScore + 2);
 		if (string.search(regexes[8]) !== -1) intScore = (intScore + 2);
 
-		if      (intScore < 16)                  strVerdict = "very weak";
-		else if (intScore > 15 && intScore < 25) strVerdict = "weak";
-		else if (intScore > 24 && intScore < 35) strVerdict = "mediocre";
-		else if (intScore > 34 && intScore < 45) strVerdict = "strong";
-		else                                     strVerdict = "stronger";
+		var callback = false;
+		var verdicts = [ "", "very weak", "weak", "mediocre", "strong", "stronger" ];
+		if(typeof options == "object") {
+			callback = options.callback;
+			verdicts = options.verdicts;
+		}
+		else if(typeof options == "function")
+		{
+			callback = options;
+		}
+
+		if      (intScore < 16)	                 { numVerdict = 1; }
+		else if (intScore > 15 && intScore < 25) { numVerdict = 2; }
+		else if (intScore > 24 && intScore < 35) { numVerdict = 3; }
+		else if (intScore > 34 && intScore < 45) { numVerdict = 4; }
+		else                                     { numVerdict = 5; }
+		if      (len == 0) numVerdict = 0;
 
 		result = {
-			'score'  : intScore,
-			'verdict': strVerdict
+			'score'	: intScore,
+			'verdict': verdicts[numVerdict],
+			'rating': numVerdict
 		};
 
 		if(typeof callback == "function") return callback(result);
